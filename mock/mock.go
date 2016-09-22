@@ -77,9 +77,11 @@ func (r *Response) MarshalJSON() ([]byte, error) {
 type TimeSeries struct {
 	Hosts    []string
 	Response mrfusion.Response
+
+	QueryCtr int
 }
 
-func NewTimeSeries(hosts []string, response mrfusion.Response) mrfusion.TimeSeries {
+func NewTimeSeries(hosts []string, response mrfusion.Response) *TimeSeries {
 	return &TimeSeries{
 		Hosts:    hosts,
 		Response: response,
@@ -89,6 +91,7 @@ func NewTimeSeries(hosts []string, response mrfusion.Response) mrfusion.TimeSeri
 var DefaultTimeSeries mrfusion.TimeSeries = NewTimeSeries([]string{"hydrogen", "helium", "hadron", "howdy"}, &Response{})
 
 func (t *TimeSeries) Query(context.Context, mrfusion.Query) (mrfusion.Response, error) {
+	t.QueryCtr++
 	return t.Response, nil
 }
 
