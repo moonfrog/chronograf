@@ -4,6 +4,7 @@ import TimeRangeDropdown from '../../shared/components/TimeRangeDropdown';
 import timeRanges from 'hson!../../shared/data/timeRanges.hson';
 import {getMappings, getAppsForHosts} from '../apis';
 import {fetchLayouts} from 'shared/apis';
+import _ from 'lodash';
 
 export const HostPage = React.createClass({
   propTypes: {
@@ -62,19 +63,51 @@ export const HostPage = React.createClass({
     const {timeRange} = this.state;
     const source = this.props.source.links.proxy;
 
+    const autoflowLayouts = _.remove(layouts, (layout) => {
+      return layout.autoflow === true;
+    });
+    let autoflowCells = [];
+
+    const cellWidth = 4;
+    const pageWidth = 12;
+
+    autoflowLayouts.forEach((layout, i) => {
+      layout.cells.forEach((cell, j) => {
+        cell.x = ((i + j) * cellWidth % pageWidth);
+        cell.y = Math.floor(((i + j) * cellWidth / pageWidth));
+        autoflowCells = autoflowCells.concat(cell);
+      });
+    });
+
+    const autoflowLayout = {
+      cells: autoflowCells,
+      autoflow: false,
+    };
+
+    const staticLayouts = _.remove(layouts, (layout) => {
+      return layout.autoflow === false;
+    });
+    staticLayouts.unshift(autoflowLayout);
+
     let layoutCells = [];
-    layouts.forEach((layout) => {
+    let translateY = 0;
+    staticLayouts.forEach((layout) => {
+      let maxY = 0;
+      layout.cells.forEach((cell) => {
+        cell.y += translateY;
+        if (cell.y > translateY) {
+          maxY = cell.y;
+        }
+        cell.queries.forEach((q) => {
+          q.text = q.query;
+          q.database = q.db;
+        });
+      });
+      translateY = maxY;
+
       layoutCells = layoutCells.concat(layout.cells);
     });
 
-    layoutCells.forEach((cell, i) => {
-      cell.queries.forEach((q) => {
-        q.text = q.query;
-        q.database = q.db;
-      });
-      cell.x = (i * 4 % 12); // eslint-disable-line no-magic-numbers
-      cell.y = 0;
-    });
 
     return (
       <LayoutRenderer

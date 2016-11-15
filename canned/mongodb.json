@@ -2,6 +2,7 @@
     "id": "921298ad-0cdd-44f4-839b-10c319e7fcc7",
  	"measurement": "mongodb",
  	"app": "mongodb",
+  "autoflow": true,
  	"cells": [{
  		"x": 0,
  		"y": 0,
