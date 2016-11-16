@@ -40,15 +40,11 @@ const CheckSources = React.createClass({
   },
 
   componentDidMount() {
-    getSources().then(({data: {sources}}) => {
-      this.setState({sources, isFetching: false});
-    }).catch(() => {
-      this.props.addFlashMessage({type: 'error', text: "Unable to connect to Chronograf server"});
-      this.setState({isFetching: false});
-    });
+    this.updateSources();
   },
 
   componentWillUpdate(nextProps, nextState) {
+    this.updateSources();
     const {router, location, params, addFlashMessage} = nextProps;
     const {isFetching, sources} = nextState;
     const source = sources.find((s) => s.id === params.sourceID);
@@ -62,6 +58,15 @@ const CheckSources = React.createClass({
         addFlashMessage({type: 'error', text: `Unable to connect to source`});
       });
     }
+  },
+
+  updateSources() {
+    getSources().then(({data: {sources}}) => {
+      this.setState({sources, isFetching: false});
+    }).catch(() => {
+      this.props.addFlashMessage({type: 'error', text: "Unable to connect to Chronograf server"});
+      this.setState({isFetching: false});
+    });
   },
 
   render() {
